@@ -1,1 +1,1 @@
-# predicting-salary
+# Data Science projects
