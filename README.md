@@ -4,10 +4,10 @@ They say that true learning occurs through action, and here I am, actively engag
 
 ## Contents
 * ### Natural Language Processing
-   * [Topic Modelling using LDA](https://github.com/Sadiya-Zubair/Data-Science-projects/blob/main/Topic%20Modelling%20using%20LDA.ipynb) I employed LDA on the reviews of Groww app
-     which is an online investment platform based in India to understand major themes.
-     Source: The data was scraped from Google Play Store.
-     Tools used: Pandas, Nltk, Gensim, IPython, pyLDAvis, Matplotlib, Seaborn, Google Play Srapper
+   * [Topic Modelling using LDA](https://github.com/Sadiya-Zubair/Data-Science-projects/blob/main/Topic%20Modelling%20using%20LDA.ipynb)  I employed LDA on the reviews of Groww 
+     app which is an online investment platform based in India to understand major themes.
+     * Source: The data was scraped from Google Play Store.
+     * Tools used: Pandas, Nltk, Gensim, IPython, pyLDAvis, Matplotlib, Seaborn, Google Play Srapper
 
 
   
