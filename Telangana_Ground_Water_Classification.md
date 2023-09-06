@@ -1,5 +1,5 @@
 # Telangana Ground Water Classification
-__
+
 ## Introduction
 
 Groundwater plays a vital role in sustaining agricultural activities in India. However, there has been a concerning decline not only 
