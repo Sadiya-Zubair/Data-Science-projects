@@ -4,7 +4,7 @@ This Repository contains all the projects I did as part of my academic journey a
 
 ## Contents
 * ### Machine Learning
-   * [Telangana Ground Water Classification](https://github.com/Sadiya-Zubair/Data-Science-projects/blob/main/Telangana_Ground_Water_Classification.ipynb) I applied a range of machine learning algorithms to analyze Telangana groundwater data with the aim of categorizing the different chemical components present in the groundwater. This classification is based on their suitability for agricultural purposes and aims to provide insights on how farmers can make optimal use of these chemical resources.
+   * [Telangana Ground Water Classification](https://github.com/Sadiya-Zubair/Data-Science-projects/blob/main/Telangana_Ground_Water_Classification.md) I applied a range of machine learning algorithms to analyze Telangana groundwater data with the aim of categorizing the different chemical components present in the groundwater. This classification is based on their suitability for agricultural purposes and aims to provide insights on how farmers can make optimal use of these chemical resources.
      * Source: https://data.telangana.gov.in/search/type/dataset
      * Tools used:pandas,sklearn, PCA, LabelEncoder, DecisionTreeClassifier, KNeighborsClassifier, SVC, xgb, RandomForestClassifier,Matplotlib
 
