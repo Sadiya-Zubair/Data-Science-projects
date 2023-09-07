@@ -69,3 +69,5 @@ tolerant crops. Gypsum amendments make feasible the use of these waters.
 * Ratio Scale-GWL, E.C, TDS, CO3, HCO3, Cl,F, NO3, SO4, NA, K, Ca, Mg, T.H, SAR
 * Interval Scale-pH
 * Nominal Scale-Classification
+## Code
+https://github.com/Sadiya-Zubair/Data-Science-projects/blob/main/Telangana_Ground_Water_Classification.ipynb
