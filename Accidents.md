@@ -38,7 +38,47 @@ To Conduct a comprehensive analysis for raising awareness about road safety, par
     * Null Hypothesis (H0): There is no significant change in death rates after the year 2019.
     * Alternative Hypothesis (H1): A decrease in death rates observed after 2019 is attributed to the emergence of the COVID-19 pandemic.
 
-##  Age and Gender Influence on Death Rates
+## Income Category of a Country and Death Rates
+
+I had this Theory that countries with lower incomes might have more road accident deaths compared to wealthier countries. My thinking was that lower-income countries often deal with things like bad roads, poor lighting, and a lack of proper road safety measures. Plus, they might not have great access to emergency medical services, so accident victims might not get the help they need quickly.
+
+To test this, I decided to collect more data from the World Bank.I used plsql to import both the data which were in Excel file to Database Then, I merged this new data with what I already had using joins.
+
+###  Count of Countries in Different Income Categories.
+                       
+			with a as(SELECT Distinct c."Country Name",c."Income Category" as income_category
+                                 FROM Country_Income_Group AS c
+                                 JOIN road_accidents AS r ON c."Country Name" = r."Country Name")
+                         select income_category,count(income_category) as "count" from a
+                         group by income_category
+                         order by "count" desc;               
+
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/797850aa-be8d-4153-93b6-fca01226781f)
+
+Well, as we can see in our data set we only have very few lower-income countries.
+
+### Creating a View for Total Deaths
+As our data doesn't have a 'Total Deaths' column but does have the 'Percentage of cause-specific deaths out of total deaths' 
+###### Percentage of cause-specific deaths out of total deaths = (Number of Deaths from a Specific Cause / Total Deaths) * 100
+we can estimate the 'Total Deaths' using this formula. We will create a view with a 'Total Deaths' column as it is used further in our analysis.
+              
+           CREATE VIEW road_accidents1 AS SELECT
+                                *,
+                               ROUND(("Number" / "Percentage of cause-specific deaths out of total deaths") * 100)
+                               AS "Total Deaths"
+			       FROM "Accidents".accidents
+	                        where "Percentage of cause-specific deaths out of total deaths" !=0 and "Number" != 0;
+
+### Percentage of Cause-specific death out of total deaths with respect to Income Category
+                SELECT
+                c."Income Category" as income_category,
+                round(sum("Number")/sum("Total Deaths")*100, 2) || '%' as "death_percent"
+                FROM Country_Income_Group AS c
+                JOIN road_accidents1 AS r ON c."Country Name" = r."Country Name"
+                 GROUP BY c."Income Category"
+                 order by "death_percent" desc ;
+
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/7ba73a15-ab5b-4d47-9796-a36ffedf80ed)
 
 ### Creating a View for Total Population
 As our data doesn't have a 'Total Population' column but does have the 'Death rate per 100,000 Population,' which is essentially the Cause-specific mortality rate (CSMR) calculated using the formula 
@@ -52,7 +92,21 @@ we can estimate the 'Total Population' using this formula. We will create a view
 			       FROM "Accidents".accidents
 	                        where "Death rate per 100 000 population" !=0 and "Number" != 0;
 
-             Select * from road_accidents;
+             Select * from road_accidents; 
+### Death Rate with respect to Income Category
+            
+	    SELECT
+              c."Income Category" as income_category,
+              round(sum(r."Number")/sum(r."Total population")*100000, 2) as "death_rate"
+              FROM Country_Income_Group AS c
+              JOIN road_accidents AS r ON c."Country Name" = r."Country Name"
+            GROUP BY c."Income Category"
+            order by "death_rate" desc ;
+
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/4849e2d8-78f1-4e62-b88c-b4087ebe846e)
+
+### 
+##  Age and Gender Influence on Death Rates
 
 ###  Overall Death Rate with respect to Age
              SELECT "Age Group", round((sum("Number") / sum("Total population") * 100000),2) as "Death Rate"
@@ -370,28 +424,7 @@ The reason for excluding data from the years 2020 and 2021 for the above was due
 ![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/b5f7c67d-89ab-45d7-8bb2-849ef2f47d12)
 
 
-           CREATE VIEW road_accidents1 AS SELECT
-                                *,
-                               ROUND(("Number" / "Percentage of cause-specific deaths out of total deaths") * 100)
-                               AS "Total Deaths"
-			       FROM "Accidents".accidents
-	                        where "Percentage of cause-specific deaths out of total deaths" !=0 and "Number" != 0;
-## Age-Specific Mortality Rate
-The Age-Specific Mortality Rate (ASMR) is a measure used to calculate the mortality rate within specific age groups during a specified time period.
-###### ASMR = (Number of Deaths in a Specific Age Group / Mid-year Population of that Age Group) * 1,000 (or 100,000)
-
-### Age group that have Maximum death rate over 100,000 deaths each year (Age specific death rate)
-
-with a as (SELECT "Country Name","Year" ,"Age Group",(sum("Number") / sum("Total population") * 100000) as "ASMR",
-	                     RANK() OVER (PARTITION BY "Year" ORDER BY (SUM("Number") / SUM("Total population") * 100000) desC)
-		             AS "Rank" from road_accidents
-                     GROUP BY "Country Name", "Year","Age Group")
-					 SELECT  "Country Name",  "Year","Age Group","Rank",
-                    Max("ASMR") AS "Max ASMR"
-            FROM a
-            where "Rank" <4
-            GROUP BY "Country Name", "Year","Rank", "Age Group"
-            order by "Year" desc,"Max ASMR" desc;
+  
 
 
 
