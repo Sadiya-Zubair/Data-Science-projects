@@ -37,8 +37,16 @@ To Conduct a comprehensive analysis for raising awareness about road safety, par
 * ### Hypothesis 4: The Impact of COVID-19 on Death Rates
     * Null Hypothesis (H0): There is no significant change in death rates after the year 2019.
     * Alternative Hypothesis (H1): A decrease in death rates observed after 2019 is attributed to the emergence of the COVID-19 pandemic.
+## Creating View
+Before going with any analysis I am creating a view to include columns Total Population and Total Deaths as we don't have on out data 
+but we do have Death rate per 100,000 Population which is essentially the Cause-specific mortality rate (CSMR) calculated using the formula 
+###### CSMR = (Number of Deaths from a Specific Cause / Total Population) * 100,000
+we can estimate the 'Total Population' using this formula. and Percentage of Cause-specific death out of total deaths with which we can calculate 
+total population and Total deaths
 
 ## Income Category of a Country and Death Rates
+
+
 
 I had this Theory that countries with lower incomes might have more road accident deaths compared to wealthier countries. My thinking was that lower-income countries often deal with things like bad roads, poor lighting, and a lack of proper road safety measures. Plus, they might not have great access to emergency medical services, so accident victims might not get the help they need quickly.
 
