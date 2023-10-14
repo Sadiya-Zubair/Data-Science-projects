@@ -37,20 +37,68 @@ To Conduct a comprehensive analysis for raising awareness about road safety, par
 * ### Hypothesis 4: The Impact of COVID-19 on Death Rates
     * Null Hypothesis (H0): There is no significant change in death rates after the year 2019.
     * Alternative Hypothesis (H1): A decrease in death rates observed after 2019 is attributed to the emergence of the COVID-19 pandemic.
-## Creating View
-Before going with any analysis I am creating a view to include columns Total Population and Total Deaths as we don't have on out data 
-but we do have Death rate per 100,000 Population which is essentially the Cause-specific mortality rate (CSMR) calculated using the formula 
+
+## Creating a View with Additional Data Fields
+
+Before diving into our analysis, let's augment our dataset with two important columns: Total Population and Total Deaths. Although these columns are not directly available in our data, we do have the Death rate per 100,000 Population, which essentially represents the Cause-specific mortality rate (CSMR). This rate can be calculated using the following formula:
+
 ###### CSMR = (Number of Deaths from a Specific Cause / Total Population) * 100,000
-we can estimate the 'Total Population' using this formula. and Percentage of Cause-specific death out of total deaths with which we can calculate 
-total population and Total deaths
+By rearranging this formula, we can estimate the 'Total Population'. Additionally, we can calculate the percentage of cause-specific deaths out of the total deaths using the following formula:
+
+###### Percentage of Cause-specific Deaths out of Total Deaths = (Number of Deaths from a Specific Cause / Total Deaths) * 100
+
+                           CREATE VIEW accident_deaths AS SELECT
+                                *,
+                               ROUND(("Number" / "Death rate per 100 000 population") * 100000)
+                               AS "Total population",
+			      ROUND(("Number" / "Percentage of cause-specific deaths out of total deaths") * 100)
+                               AS "Total Deaths"
+			       FROM "Accidents".accidents
+	                       where "Death rate per 100 000 population" !=0 and "Number" != 0
+							and "Percentage of cause-specific deaths out of total deaths" !=0 ;
+
+                                Select * from accident_deaths;
+It's important to note that the values we will obtain are approximations rather than exact figures, as these are calculated estimates.
+
+## Yearly Overall Data
+                        SELECT
+                           "Year",
+                           SUM("Number") AS deaths_due_to_accidents,
+                           SUM("Total Deaths") AS Total_Deaths,
+                           SUM("Total population") AS Total_Population,
+                           ROUND((SUM("Number") / SUM("Total Deaths") * 100), 2) AS "Percentage of cause-specific deaths out of total 
+                           deaths",
+                           ROUND((SUM("Number") / SUM("Total population") * 100000), 2) AS "Death rate per 100 000 population"
+                        FROM accident_deaths
+                        GROUP BY "Year"
+                        ORDER BY "Year" DESC;
+
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/f0536c6e-b520-458a-9498-18104df5002e)
+
+As expected, the number of deaths due to accidents, Percentage of cause-specific deaths out of total deaths, and the death rate per 100,000 population all went down starting in 2019.
+
+Now, 2019 is a significant year because it's when the COVID-19 pandemic began, and many places imposed lockdowns to control it. It's reasonable to think that the decrease in road accident deaths is due to these lockdowns.
+
+However, what's surprising is that the total number of deaths also decreased during this time. This is strange because the pandemic led to a high number of deaths.
+
+### Number of Countries that gave data to WHO in the years 2019,2020 and 2021
+
+                        SELECT "Year",Count(distinct "Country Name") as country_count
+                         FROM accident_deaths
+                         group by "Year"
+                         order by "Year" Desc
+                         limit 3;
+
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/9468026c-0918-43e0-ab11-281bd0f5d463)
+
+We can observe a significant drop in the number of countries providing data to the WHO, which explains the decrease in Total Deaths and Total Population in our dataset during this time.
+For the time being, we will exclude the years 2020 and 2021 from our analysis. We will revisit these years later and focus on the countries that consistently provided data to the WHO over the years.
 
 ## Income Category of a Country and Death Rates
 
-
-
 I had this Theory that countries with lower incomes might have more road accident deaths compared to wealthier countries. My thinking was that lower-income countries often deal with things like bad roads, poor lighting, and a lack of proper road safety measures. Plus, they might not have great access to emergency medical services, so accident victims might not get the help they need quickly.
 
-To test this, I decided to collect more data from the World Bank.I used plsql to import both the data which were in Excel file to Database Then, I merged this new data with what I already had using joins.
+To test this, I decided to collect data realted to Countries Income category from the World Bank.I used plsql to import both the data which were in Excel file to Database.
 
 ###  Count of Countries in Different Income Categories.
                        
@@ -65,55 +113,23 @@ To test this, I decided to collect more data from the World Bank.I used plsql to
 
 Well, as we can see in our data set we only have very few lower-income countries.
 
-### Creating a View for Total Deaths
-As our data doesn't have a 'Total Deaths' column but does have the 'Percentage of cause-specific deaths out of total deaths' 
-###### Percentage of cause-specific deaths out of total deaths = (Number of Deaths from a Specific Cause / Total Deaths) * 100
-we can estimate the 'Total Deaths' using this formula. We will create a view with a 'Total Deaths' column as it is used further in our analysis.
-              
-           CREATE VIEW road_accidents1 AS SELECT
-                                *,
-                               ROUND(("Number" / "Percentage of cause-specific deaths out of total deaths") * 100)
-                               AS "Total Deaths"
-			       FROM "Accidents".accidents
-	                        where "Percentage of cause-specific deaths out of total deaths" !=0 and "Number" != 0;
+### Average with respect to Income Category
 
-### Percentage of Cause-specific death out of total deaths with respect to Income Category
-                SELECT
-                c."Income Category" as income_category,
-                round(sum("Number")/sum("Total Deaths")*100, 2) || '%' as "death_percent"
+		SELECT
+                c."Income Category" as income_category, round(avg("Number"),2) as Number,
+				round(avg("Total Deaths"),2) as "Total Deaths",
+				round(avg("Total population"),2) as Total_Population,
+                round(sum("Number")/sum("Total Deaths")*100, 2) || '%' as "death_per_outof_total",
+				round(sum(r."Number")/sum(r."Total population")*100000, 2) as "Death Rate per 100,000 Population"
                 FROM Country_Income_Group AS c
-                JOIN road_accidents1 AS r ON c."Country Name" = r."Country Name"
+                JOIN accident_deaths AS r ON c."Country Name" = r."Country Name"
+				where "Year" not in ('2020','2021')
                  GROUP BY c."Income Category"
-                 order by "death_percent" desc ;
+                 order by "Death Rate per 100,000 Population" desc ;
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/2c188ed3-d136-470e-9751-a073174a74bf)
+	 
 
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/7ba73a15-ab5b-4d47-9796-a36ffedf80ed)
 
-### Creating a View for Total Population
-As our data doesn't have a 'Total Population' column but does have the 'Death rate per 100,000 Population,' which is essentially the Cause-specific mortality rate (CSMR) calculated using the formula 
-###### CSMR = (Number of Deaths from a Specific Cause / Total Population) * 100,000
-we can estimate the 'Total Population' using this formula. We will create a view with a 'Total Population' column as it is used further in our analysis.
-
-            CREATE VIEW road_accidents AS SELECT
-                                *,
-                               ROUND(("Number" / "Death rate per 100 000 population") * 100000)
-                               AS "Total population"
-			       FROM "Accidents".accidents
-	                        where "Death rate per 100 000 population" !=0 and "Number" != 0;
-
-             Select * from road_accidents; 
-### Death Rate with respect to Income Category
-            
-	    SELECT
-              c."Income Category" as income_category,
-              round(sum(r."Number")/sum(r."Total population")*100000, 2) as "death_rate"
-              FROM Country_Income_Group AS c
-              JOIN road_accidents AS r ON c."Country Name" = r."Country Name"
-            GROUP BY c."Income Category"
-            order by "death_rate" desc ;
-
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/4849e2d8-78f1-4e62-b88c-b4087ebe846e)
-
-### 
 ##  Age and Gender Influence on Death Rates
 
 ###  Overall Death Rate with respect to Age
@@ -122,9 +138,8 @@ we can estimate the 'Total Population' using this formula. We will create a view
 		     group by "Age Group"
                      Order by "Death Rate" Desc;
 
- <span style="font-weight: lighter;">Categorizing the Age Group into Teenager, Young Adult, Adult, Middle Age and Senior</span>
-
-     with a as ( SELECT
+   ## Average Deat Rate with respect to Age Category
+                             with a as ( SELECT
                              *,
                          CASE
                            WHEN "Age Group" in ('15-19') THEN 'Teenager'
@@ -133,12 +148,18 @@ we can estimate the 'Total Population' using this formula. We will create a view
                            WHEN "Age Group" in ('40-44','45-49','50-54','55-59') THEN 'Middle Age'
                      ELSE 'Senior'
               END AS age_category
-              FROM road_accidents)
-              SELECT "age_category", round((sum("Number") / sum("Total population") * 100000),2) as "Death Rate"
+              FROM accident_deaths)
+              SELECT "age_category",round(Avg("Number"),2) as avg_Number,Round(Avg("Total Deaths"),2)as Avg_Total_Deaths,
+			  round(Avg("Total population"),2) as Avg_Total_Population, 
+			  round((Sum("Number")/sum("Total Deaths")*100),2) || '%' as death_percent,
+	                  round((sum("Number") / sum("Total population")* 100000),2) as "Death Rate"
                      from a
+			 where "Year" not in ('2020','2021')
 		     group by "age_category"
 		     Order by "Death Rate" Desc;
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/3beadabf-d5eb-44e1-9100-b3d9deed3bf7)
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/6bc32ab7-f941-42a0-b039-ed7beff1eeec)
+
+     
 
 ### Count of age_categories of each Country with Maximum Death Rate 
           with a as ( SELECT
