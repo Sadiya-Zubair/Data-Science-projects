@@ -21,22 +21,11 @@ Data is taken from Open Data Portal of  World Health Organization (WHO).
 ## Objectives
 To Conduct a comprehensive analysis for raising awareness about road safety, particularly in countries with alarmingly high rates of road accident fatalities. The goal is to provide data-driven insights and precautions for reducing road accident-related deaths in these countries.
 
-## Hypothesis
-* ### Hypothesis 1: Income and Death Rates
-    * Null Hypothesis (H0): There is no significant difference in death rates between low-income, middle-income, and high-income countries.
-    * Alternative Hypothesis (H1): Low and middle-income countries exhibit higher death rates compared to high-income countries.
-
-* ### Hypothesis 2: Age and Gender Influence on Death Rates
-    * Null Hypothesis (H0): Age and gender do not significantly impact death rates.
-    * Alternative Hypothesis (H1):Age and gend significantly impact death rates.
-
-* ### Hypothesis 3: Cause-Specific Death Percentages by Age and Gender
-    * Null Hypothesis (H0): There are no significant differences in cause-specific death percentages between age and gender groups.
-    * Alternative Hypothesis (H1): Young adults and males exhibit the highest percentages of cause-specific deaths in certain categories.
-
-* ### Hypothesis 4: The Impact of COVID-19 on Death Rates
-    * Null Hypothesis (H0): There is no significant change in death rates after the year 2019.
-    * Alternative Hypothesis (H1): A decrease in death rates observed after 2019 is attributed to the emergence of the COVID-19 pandemic.
+##  Income and Death Rates
+  
+## Age and Gender Influence on Death Rates
+   
+##  The Impact of COVID-19 on Death Rates
 
 ## Creating a View with Additional Data Fields
 
@@ -94,11 +83,45 @@ However, what's surprising is that the total number of deaths also decreased dur
 We can observe a significant drop in the number of countries providing data to the WHO, which explains the decrease in Total Deaths and Total Population in our dataset during this time.
 For the time being, we will exclude the years 2020 and 2021 from our analysis. We will revisit these years later and focus on the countries that consistently provided data to the WHO over the years.
 
+### Outlier detection
+                      with a as(Select "Country Name","Year", sum("Number") AS "Number",
+                       sum("Total Deaths") AS "Total Deaths",
+                       SUM("Total population") AS "Total Population",
+                       ROUND((SUM("Number") / SUM("Total Deaths") * 100), 2) AS "per_death_outof_total_deaths",
+                       ROUND((SUM("Number") / SUM("Total population") * 100000), 2) AS "Death Rate"
+                    FROM accident_deaths
+                    GROUP BY "Year","Country Name"),
+                Quartiles AS (
+                       SELECT
+                        PERCENTILE_CONT(0.25) WITHIN GROUP (ORDER BY "Death Rate") AS Q1,
+                        PERCENTILE_CONT(0.75) WITHIN GROUP (ORDER BY "Death Rate") AS Q3
+                        FROM a
+                         ),
+        
+                c as(SELECT
+               a."Country Name",a."Year",a."Number",a."Total Deaths",
+	       a."Total Population",a."per_death_outof_total_deaths",
+               a."Death Rate",
+            CASE
+              WHEN a."Death Rate" < (q.Q1 - 1.5 * (q.Q3 - q.Q1)) OR a."Death Rate" > (q.Q3 + 1.5 * (q.Q3 - q.Q1)) THEN 1
+           ELSE 0
+           END AS is_outlier
+           FROM a
+          CROSS JOIN Quartiles q)
+          select  "Country Name",Count("is_outlier") as outlier_count from c
+          where "is_outlier" !=0
+          group by "Country Name"
+          order by outlier_count desc;
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/4b0ee989-3f82-4a75-b2ee-910601ae3d74)
+
+## Deleting Countries from our data with ouliers more than 2
+                 DELETE FROM accident_deaths
+                 WHERE "Country Name" in
+		 ('Grenada','Saint Vincent and the Grenadines','Saint Lucia','Domnican Republic','Belize');
+
 ## Income Category of a Country and Death Rates
 
-I had this Theory that countries with lower incomes might have more road accident deaths compared to wealthier countries. My thinking was that lower-income countries often deal with things like bad roads, poor lighting, and a lack of proper road safety measures. Plus, they might not have great access to emergency medical services, so accident victims might not get the help they need quickly.
-
-To test this, I decided to collect data realted to Countries Income category from the World Bank.I used plsql to import both the data which were in Excel file to Database.
+I collected data related to Countries Income category from the World Bank.I used plsql to import both the data which were in Excel file to Database.
 
 ###  Count of Countries in Different Income Categories.
                        
@@ -109,11 +132,12 @@ To test this, I decided to collect data realted to Countries Income category fro
                          group by income_category
                          order by "count" desc;               
 
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/797850aa-be8d-4153-93b6-fca01226781f)
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/158b4f67-2170-4cf3-a15c-b01b36ad1a11)
+
 
 Well, as we can see in our data set we only have very few lower-income countries.
 
-### Average with respect to Income Category
+### Average Death with respect to Income Category
 
 		SELECT
                 c."Income Category" as income_category, round(avg("Number"),2) as Number,
@@ -126,10 +150,35 @@ Well, as we can see in our data set we only have very few lower-income countries
 				where "Year" not in ('2020','2021')
                  GROUP BY c."Income Category"
                  order by "Death Rate per 100,000 Population" desc ;
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/2c188ed3-d136-470e-9751-a073174a74bf)
-	 
 
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/d6d0c61f-000f-4a89-9e3b-5e553d51f289)
 
+### Top Five Countries with the highest Average Death Rate
+                              with z as ( Select "Country Name","Year", sum("Number") AS "Number",
+                       sum("Total Deaths") AS "Total Deaths",
+                       SUM("Total population") AS "Total Population",
+                       ROUND((SUM("Number") / SUM("Total Deaths") * 100), 2) AS "per_death_outof_total_deaths",
+                       ROUND((SUM("Number") / SUM("Total population") * 100000), 2) AS "Death Rate"
+                    FROM accident_deaths
+                    GROUP BY "Year","Country Name"),
+			a as(SELECT
+                "Country Name", round(avg("Number"),2) as Number,
+				round(avg("Total Deaths"),2) as "Total Deaths",
+				round(avg("Total Population"),2) as Total_Population,
+                round(sum("Number")/sum("Total Deaths")*100, 2) || '%' as "death_per_outof_total",
+				round(sum("Number")/sum("Total Population")*100000, 2) as "Death Rate per 100,000 Population"
+				   from z
+				  where "Year" not in ('2020','2021')
+				  group by "Country Name")
+				   select a."Country Name",c."Income Category",
+				   a.Number,a."Total Deaths", a.Total_Population,a.death_per_outof_total,
+				   a."Death Rate per 100,000 Population"
+                FROM Country_Income_Group AS c
+                JOIN a ON c."Country Name" = a."Country Name"
+                 order by "Death Rate per 100,000 Population" desc
+				 limit 5;
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/95e1cd2b-24e4-47aa-8a5a-a4e1e2cd633c)
+                      
 ##  Age and Gender Influence on Death Rates
 
 ###  Overall Death Rate with respect to Age
