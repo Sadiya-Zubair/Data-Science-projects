@@ -20,14 +20,9 @@ Data is taken from Open Data Portal of  World Health Organization (WHO).
 
 ## Objectives
 To Conduct a comprehensive analysis for raising awareness about road safety, particularly in countries with alarmingly high rates of road accident fatalities. The goal is to provide data-driven insights and precautions for reducing road accident-related deaths in these countries.
-
-##  Income and Death Rates
   
-## Age and Gender Influence on Death Rates
-   
-##  The Impact of COVID-19 on Death Rates
-
-## Creating a View with Additional Data Fields
+## Preparing Data for EDA
+### Creating a View with Additional Data Fields
 
 Before diving into our analysis, let's augment our dataset with two important columns: Total Population and Total Deaths. Although these columns are not directly available in our data, we do have the Death rate per 100,000 Population, which essentially represents the Cause-specific mortality rate (CSMR). This rate can be calculated using the following formula:
 
@@ -49,7 +44,7 @@ By rearranging this formula, we can estimate the 'Total Population'. Additionall
                                 Select * from accident_deaths;
 It's important to note that the values we will obtain are approximations rather than exact figures, as these are calculated estimates.
 
-## Yearly Overall Data
+### Yearly Overall Data
                         SELECT
                            "Year",
                            SUM("Number") AS deaths_due_to_accidents,
@@ -114,7 +109,7 @@ For the time being, we will exclude the years 2020 and 2021 from our analysis. W
           order by outlier_count desc;
 ![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/4b0ee989-3f82-4a75-b2ee-910601ae3d74)
 
-## Deleting Countries from our data with ouliers more than 2
+### Deleting Countries from our data with ouliers more than 2
                  DELETE FROM accident_deaths
                  WHERE "Country Name" in
 		 ('Grenada','Saint Vincent and the Grenadines','Saint Lucia','Domnican Republic','Belize');
@@ -185,9 +180,9 @@ Well, as we can see in our data set we only have very few lower-income countries
              SELECT "Age Group", round((sum("Number") / sum("Total population") * 100000),2) as "Death Rate"
                      from road_accidents
 		     group by "Age Group"
-                     Order by "Death Rate" Desc;
+                   Order by "Death Rate" Desc;
 
-   ## Average Deat Rate with respect to Age Category
+   ## Average Death Rate with respect to Age Category
                              with a as ( SELECT
                              *,
                          CASE
@@ -438,7 +433,7 @@ we can estimate the 'Total Deaths' using this formula. We will create a view wit
 ### Young Adults Year wise deaths due to accident
 ![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/1c4f3544-b159-45e7-a292-b1617954c46d)
 
-## The Impact of COVID-19 on Death Rates
+## Impact of COVID-19 on Death Rates
 The reason for excluding data from the years 2020 and 2021 for the above was due to insufficient data availability. Only approximately 56 and 23 countries, respectively, provided complete data for the World Health Organization (WHO) during those years as we know the reason why "Covid-19".
 ### Year wise death rate of that 23 countries
                 SELECT "Year",
