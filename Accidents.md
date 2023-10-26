@@ -18,10 +18,11 @@ Data is taken from Open Data Portal of  World Health Organization (WHO).
 ## Data
 ![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/e61689d6-a05b-4453-83e1-1ba9ec4c3f22) ![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/b92656d4-5223-4098-b4e8-d22d0ad525d8)
 
-## Objectives
+## Objective
 To Conduct a comprehensive analysis for raising awareness about road safety, particularly in countries with alarmingly high rates of road accident fatalities. The goal is to provide data-driven insights and precautions for reducing road accident-related deaths in these countries.
-  
+
 ## 1. Preparing Data for EDA
+
 ### Creating a View with Additional Data Fields
 
 Before diving into our analysis, let's augment our dataset with two important columns: Total Population and Total Deaths. Although these columns are not directly available in our data, we do have the Death rate per 100,000 Population, which essentially represents the Cause-specific mortality rate (CSMR). This rate can be calculated using the following formula:
