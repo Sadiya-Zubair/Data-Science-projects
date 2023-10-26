@@ -14,7 +14,7 @@ This Repository contains all the projects I did as part of my academic journey a
      * Source: The data was scraped from Google Play Store.
      * Tools used: Pandas, Nltk, Gensim, IPython, pyLDAvis, Matplotlib, Seaborn, Google Play Srapper
 * ### Exploratory Data Analysis
-    * [EDA of Deaths Due to Road Accidents Using SQL](https://github.com/Sadiya-Zubair/Data-Science-projects/blob/main/Accidents.md) 
+    * [EDA of Deaths Due to Road Accidents Using SQL](https://github.com/Sadiya-Zubair/Data-Science-projects/blob/main/Accidents.md) I analyze road accident mortality rates, gained valuable insights into the patterns, trends, and potential factors that influence the occurrence of deaths due to road accidents.
       * Source: WHO and World Bank
       * Tools: PostgreSQL
 
