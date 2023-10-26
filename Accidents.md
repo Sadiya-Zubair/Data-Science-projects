@@ -21,7 +21,7 @@ Data is taken from Open Data Portal of  World Health Organization (WHO).
 ## Objectives
 To Conduct a comprehensive analysis for raising awareness about road safety, particularly in countries with alarmingly high rates of road accident fatalities. The goal is to provide data-driven insights and precautions for reducing road accident-related deaths in these countries.
   
-## Preparing Data for EDA
+## 1. Preparing Data for EDA
 ### Creating a View with Additional Data Fields
 
 Before diving into our analysis, let's augment our dataset with two important columns: Total Population and Total Deaths. Although these columns are not directly available in our data, we do have the Death rate per 100,000 Population, which essentially represents the Cause-specific mortality rate (CSMR). This rate can be calculated using the following formula:
@@ -114,7 +114,7 @@ For the time being, we will exclude the years 2020 and 2021 from our analysis. W
                  WHERE "Country Name" in
 		 ('Grenada','Saint Vincent and the Grenadines','Saint Lucia','Domnican Republic','Belize');
 
-## Income Category of a Country and Death Rates
+## 2. Income Category of a Country and Death Rates
 
 I collected data related to Countries Income category from the World Bank.I used plsql to import both the data which were in Excel file to Database.
 
@@ -160,7 +160,6 @@ Well, as we can see in our data set we only have very few lower-income countries
                 "Country Name", round(avg("Number"),2) as Number,
 				round(avg("Total Deaths"),2) as "Total Deaths",
 				round(avg("Total Population"),2) as Total_Population,
-                round(sum("Number")/sum("Total Deaths")*100, 2) || '%' as "death_per_outof_total",
 				round(sum("Number")/sum("Total Population")*100000, 2) as "Death Rate per 100,000 Population"
 				   from z
 				  where "Year" not in ('2020','2021')
@@ -173,8 +172,19 @@ Well, as we can see in our data set we only have very few lower-income countries
                  order by "Death Rate per 100,000 Population" desc
 				 limit 5;
 ![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/95e1cd2b-24e4-47aa-8a5a-a4e1e2cd633c)
-                      
-##  Age and Gender Influence on Death Rates
+
+### Top Five Countries with the Least Average Death Rate
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/d86415e5-d3a5-4ccf-bad8-bd5312f216a5)
+
+### Top Five Countries with the highest Average Death Percentage Out of Total Deaths
+
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/cb3f4e63-be42-4fb8-a31d-3d0754b16dd3)
+### Top Five Countries with the Least Average Death Percentage Out of Total Deaths
+
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/32c80e34-c9ae-478c-b0af-7fce53f4b577)
+
+
+## 3. Age and Gender Influence on Death Rates
 
 ###  Overall Death Rate with respect to Age
              SELECT "Age Group", round((sum("Number") / sum("Total population") * 100000),2) as "Death Rate"
@@ -182,7 +192,7 @@ Well, as we can see in our data set we only have very few lower-income countries
 		     group by "Age Group"
                    Order by "Death Rate" Desc;
 
-   ## Average Death Rate with respect to Age Category
+### Average Death Rate with respect to Age Category
                              with a as ( SELECT
                              *,
                          CASE
@@ -202,11 +212,8 @@ Well, as we can see in our data set we only have very few lower-income countries
 		     group by "age_category"
 		     Order by "Death Rate" Desc;
 ![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/6bc32ab7-f941-42a0-b039-ed7beff1eeec)
-
-     
-
-### Count of age_categories of each Country with Maximum Death Rate 
-          with a as ( SELECT
+### Average Death Rate with respect to Income Category and Age Category
+                          with a as ( SELECT
                              *,
                          CASE
                            WHEN "Age Group" in ('15-19') THEN 'Teenager'
@@ -215,232 +222,73 @@ Well, as we can see in our data set we only have very few lower-income countries
                            WHEN "Age Group" in ('40-44','45-49','50-54','55-59') THEN 'Middle Age'
                      ELSE 'Senior'
               END AS age_category
-              FROM road_accidents),
-			b as(  SELECT "Country Name","age_category", round((sum("Number") / sum("Total population") * 100000),2) as "Death 
-                              Rate",
-				RANK() OVER (PARTITION BY "Country Name" ORDER BY (SUM("Number") / SUM("Total population") * 100000) DESC)
-	             AS "Rank" from a                                                                                ----ASC for minimum
-		     group by "age_category","Country Name"),
-			 c as (select "Country Name","age_category","Death Rate","Rank"
-			     from b
-				  where "Rank"<2
-			     order by "Death Rate" desc)
-			 SELECT
-                "age_category",
-                  COUNT("age_category") AS "Age Category Count"
-              FROM c
-              GROUP BY "age_category"
-              ORDER BY "Age Category Count" DESC;
+              FROM accident_deaths)
+			  SELECT
+              c."Income Category" as income_category, a."age_category", round(avg("Number"),2) as Number,
+				round(avg("Total Deaths"),2) as "Total Deaths",
+				round(avg("Total population"),2) as Total_Population,
+                round(sum("Number")/sum("Total Deaths")*100, 2) || '%' as "death_per_outof_total",
+				round(sum(a."Number")/sum(a."Total population")*100000, 2) as "Death Rate per 100,000 Population"
+                FROM Country_Income_Group AS c
+                JOIN a ON c."Country Name" = a."Country Name"
+				where "Year" not in ('2020','2021')
+                 GROUP BY c."Income Category",a."age_category"
+				 order by c."Income Category", "Death Rate per 100,000 Population"desc;
+     ![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/3f9742e5-23aa-4ada-93e8-9cf4a5b9ecc7)
 
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/a29b1061-90e1-4344-adcd-30c673007e93)
+ ### Death Rate with respect to Gender     
+                        select "Sex",  round(sum("Number")/sum("Total Deaths")*100, 2) || '%' as "death_per_outof_total",
+				round(sum("Number")/sum("Total population")*100000, 2) as "Death Rate per 100,000 Population"
+				from accident_deaths
+				group by "Sex";
 
-### Count of age_categories of each Country with Minimum Death Rate 
-
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/4690b73b-a120-49bb-90c7-d1838b794e62)
-
-### Count of age_categories of each Country with Maximum Death Rate with respect to gender
-           with a as ( SELECT
-                             *,
-                         CASE
-                           WHEN "Age Group" in ('15-19') THEN 'Teenager'
-                           WHEN "Age Group" in ('20-24','25-29') THEN 'Young Adult'
-                           WHEN "Age Group" in ('30-34','35-39') THEN 'Adult'
-                           WHEN "Age Group" in ('40-44','45-49','50-54','55-59') THEN 'Middle Age'
-                     ELSE 'Senior'
-              END AS age_category
-              FROM road_accidents),
-			b as(  SELECT "Country Name","age_category","Sex", round((sum("Number") / sum("Total population") * 100000),2) as 
-                              "Death Rate",
-				RANK() OVER (PARTITION BY "Country Name" ORDER BY (SUM("Number") / SUM("Total population") * 100000) DESC)
-	             AS "Rank" from                                                                                  -- ASC for min
-		     group by "age_category","Country Name","Sex"),
-			 c as (select "Country Name","age_category","Sex","Death Rate","Rank"
-			     from b
-				  where "Rank"<2
-			     order by "Death Rate" desc)
-			 SELECT
-                "age_category","Sex",
-                  COUNT("age_category") AS "Age Category Count"
-              FROM c
-              GROUP BY "age_category","Sex"
-              ORDER BY "Age Category Count" DESC;
-
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/dc5b0119-d7c7-44fb-8e0e-f18bf5f99a56)
-
-### Count of age_categories of each Country with Minimum Death Rate with respect to gender
-
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/89ae03d2-f31b-4a70-8f39-9c4f686ff8a8)
+    ![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/4501491d-4f18-4605-b4f5-d87d652aaac8)
 
 
-### Number of occurrences of the gender with the highest death rate in each country.
-           			
-	              with b as(  SELECT "Country Name","Sex", round((sum("Number") / sum("Total population") * 100000),2) as "Death Rate",
-				RANK() OVER (PARTITION BY "Country Name" ORDER BY (SUM("Number") / SUM("Total population") * 100000) DESC)
-                                                                                                                           --ASC for min
-	             AS "Rank" from road_accidents
-		     group by "Country Name","Sex"),
-		         c as (select "Country Name","Sex","Death Rate"
-			     from b
-				  where "Rank"<2)
-				  
-				select "Sex", Count("Sex") as "Count"
-				from c 
-				group by "Sex"
-				order by "Count" desc;
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/0b68b891-e2d6-4150-9686-15bd02188d74)
-
-### Number of occurrences of the gender with the highest death rate in each country.
-
-
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/e1e7764a-f44f-443f-b7b9-12032d8b0ba5)
-
-
-### Creating a View for Total Deaths
-As our data doesn't have a 'Total Deaths' column but does have the 'Percentage of cause-specific deaths out of total deaths' 
-###### Percentage of cause-specific deaths out of total deaths = (Number of Deaths from a Specific Cause / Total Deaths) * 100
-we can estimate the 'Total Deaths' using this formula. We will create a view with a 'Total Deaths' column as it is used further in our analysis.
-              
-           CREATE VIEW road_accidents1 AS SELECT
-                                *,
-                               ROUND(("Number" / "Percentage of cause-specific deaths out of total deaths") * 100)
-                               AS "Total Deaths"
-			       FROM "Accidents".accidents
-	                        where "Percentage of cause-specific deaths out of total deaths" !=0 and "Number" != 0;
-              
-### Overall percentage odf deaths due to accidents out of total deaths
-            
-	      SELECT round((sum("Number") / sum("Total Deaths") * 100),2) as "Death Rate"
-                     from road_accidents1;
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/f590345c-41d8-4c59-9068-0918e99680f6)
-
-###  Percentage of Deaths Due to Accidents Out of Total Deaths for Different Age Groups
-
-	             SELECT "Age Group",
-               round((sum("Number") / sum("Total Deaths") * 100),2)
-			   as "Percentage of death due to accident out of total deaths"
-               from road_accidents1
-			   group by "Age Group"
-			   order by "Percentage of death due to accident out of total deaths" desc;
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/abf63003-94e0-4f89-9288-92462ab31dc7)
-
-### Count of Occurrences for Age Categories with the Highest Percentage of Death due to Accident out of total deaths in Each Country
-
-	with a as ( SELECT
-                         *,
-                     CASE
-                       WHEN "Age Group" in ('15-19') THEN 'Teenager'
-                       WHEN "Age Group" in ('20-24','25-29') THEN 'Young Adult'
-                       WHEN "Age Group" in ('30-34','35-39') THEN 'Adult'
-                       WHEN "Age Group" in ('40-44','45-49','50-54','55-59') THEN 'Middle Age'
-                 ELSE 'Senior'
-          END AS age_category
-          FROM road_accidents1),
-		b as(  SELECT "Country Name","age_category", round((sum("Number") / sum("Total Deaths") * 100),2) as 
-                          "percentage of death",
-			RANK() OVER (PARTITION BY "Country Name" ORDER BY (SUM("Number") / SUM("Total Deaths") * 100) DESC)
-             AS "Rank" from  a                                                                        -- ASC for min
-	     group by "age_category","Country Name"),
-		 c as (select "Country Name","age_category","percentage of death","Rank"
-		     from b
-			  where "Rank"<2
-		     order by "percentage of death" desc)
-		 SELECT
-            "age_category",
-              COUNT("age_category") AS "Count"
-          FROM c
-          GROUP BY "age_category"
-          ORDER BY "Count" DESC;
-
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/c53b22fa-3eca-4c9b-b7a5-40436daa8d56)
-### Count of Occurrences for Age Categories with the Lowest Percentage of Death due to Accident out of total deaths in Each Country
-
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/1fbe1381-92b7-43fc-834e-44450f4080ce)
-
-### Count of Occurrences for Age Categories and Sex with the Highest Percentage of Deaths in Each Country
-           
-	   with a as ( SELECT
-                             *,
-                         CASE
-                           WHEN "Age Group" in ('15-19') THEN 'Teenager'
-                           WHEN "Age Group" in ('20-24','25-29') THEN 'Young Adult'
-                           WHEN "Age Group" in ('30-34','35-39') THEN 'Adult'
-                           WHEN "Age Group" in ('40-44','45-49','50-54','55-59') THEN 'Middle Age'
-                     ELSE 'Senior'
-              END AS age_category
-              FROM road_accidents1),
-			b as(  SELECT "Country Name","age_category","Sex", round((sum("Number") / sum("Total Deaths") * 100),2) as 
-                              "percentage of deaths",
-				RANK() OVER (PARTITION BY "Country Name" ORDER BY (SUM("Number") / SUM("Total Deaths") * 100) DESC)
-	             AS "Rank" from  a                                                                                -- ASC for min
-		     group by "age_category","Country Name","Sex"),
-			 c as (select "Country Name","age_category","Sex","percentage of deaths","Rank"
-			     from b
-				  where "Rank"<2
-			     order by "percentage of deaths" desc)
-			 SELECT
-                "age_category","Sex",
-                  COUNT("age_category") AS "Age Category Count"
-              FROM c
-              GROUP BY "age_category","Sex"
-              ORDER BY "Age Category Count" DESC;
-
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/a12fcb93-c120-4bd9-b9bb-ead7bc0663dd)
-### Count of Occurrences for Age Categories and Sex with the Lowest Percentage of Deaths in Each Country
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/68ef8a0a-4c86-4ab3-932a-2c8b7f78d98f)
-
-### Count of Number of occurrences for each gender with the highest percentage of deaths in each country
-
-            WITH b AS (
-                 SELECT "Country Name", "Sex", ROUND((SUM("Number") / SUM("Total Deaths") * 100), 2) AS "percentage of deaths",
-                         RANK() OVER (PARTITION BY "Country Name" ORDER BY (SUM("Number") / SUM("Total Deaths") * 100) DESC) AS "Rank"
-                         FROM road_accidents1
-                         GROUP BY "Country Name", "Sex"
-                        ),
-                 c AS (
-                 SELECT "Country Name", "Sex", "percentage of deaths", "Rank"
-                        FROM b
-                        WHERE "Rank" < 2
-                        )
-                SELECT
-                     "Sex",
-                      COUNT("Sex") AS "Count"
-                      FROM c
-                      GROUP BY "Sex"
-                      ORDER BY "Count" DESC;
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/5309111a-1319-4022-8ef2-87accae451d2)
-
-###  Teenagers Year wise deaths due to accident
+### Average Death Rate with respect to gender and age category
                      with a as ( SELECT
-                                    *,
-                                 CASE
-                                    WHEN "Age Group" in ('15-19') THEN 'Teenager'
-                                    WHEN "Age Group" in ('20-24','25-29') THEN 'Young Adult'
-                                    WHEN "Age Group" in ('30-34','35-39') THEN 'Adult'
-                                    WHEN "Age Group" in ('40-44','45-49','50-54','55-59') THEN 'Middle Age'
-                                 ELSE 'Senior'
-                                END AS age_category
-                                FROM road_accidents1)
-                     SELECT "Year",
-		            SUM("Number")as accident_deaths,
-                            SUM("Total Deaths") as Total_Deaths,
-			    ROUND((SUM("Number") / SUM("Total Deaths")) * 100, 2) AS percentage
-                     FROM a
-                     WHERE "Year" != '2020' AND "Year" != '2021' and "age_category" = 'Teenager'
-                     GROUP BY "Year"
-                     ORDER BY "Year" DESC;
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/98b01e0f-1d3c-48f8-84d4-18c9b22576fd)
+                             *,
+                         CASE
+                           WHEN "Age Group" in ('15-19') THEN 'Teenager'
+                           WHEN "Age Group" in ('20-24','25-29') THEN 'Young Adult'
+                           WHEN "Age Group" in ('30-34','35-39') THEN 'Adult'
+                           WHEN "Age Group" in ('40-44','45-49','50-54','55-59') THEN 'Middle Age'
+                     ELSE 'Senior'
+              END AS age_category
+              FROM accident_deaths)
+              SELECT "age_category","Sex",round(Avg("Number"),2) as avg_Number,Round(Avg("Total Deaths"),2)as Avg_Total_Deaths,
+			  round(Avg("Total population"),2) as Avg_Total_Population, 
+			  round((Sum("Number")/sum("Total Deaths")*100),2) || '%' as death_percent,
+	                  round((sum("Number") / sum("Total population")* 100000),2) as "Death Rate"
+                     from a
+			 where "Year" not in ('2020','2021')
+		     group by "age_category","Sex"
+		     Order by "Death Rate" Desc;
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/d5a322f4-d243-4a5f-a66b-81dd6b02320b)
 
-### Young Adults Year wise deaths due to accident
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/1c4f3544-b159-45e7-a292-b1617954c46d)
+### Average Death Rate with respect to gender and Income Category
+              SELECT
+              c."Income Category" as income_category,"Sex" , round(avg("Number"),2) as Number,
+				round(avg("Total Deaths"),2) as "Total Deaths",
+				round(avg("Total population"),2) as Total_Population,
+                round(sum("Number")/sum("Total Deaths")*100, 2) || '%' as "death_per_outof_total",
+				round(sum(a."Number")/sum(a."Total population")*100000, 2) as "Death Rate per 100,000 Population"
+                FROM Country_Income_Group AS c
+                JOIN accident_deaths as a ON c."Country Name" = a."Country Name"
+				where "Year" not in ('2020','2021')
+                 GROUP BY c."Income Category",a."Sex"
+				 order by c."Income Category", "Death Rate per 100,000 Population"desc;
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/194d6d94-b19e-451f-8040-130af8256953)
 
-## Impact of COVID-19 on Death Rates
-The reason for excluding data from the years 2020 and 2021 for the above was due to insufficient data availability. Only approximately 56 and 23 countries, respectively, provided complete data for the World Health Organization (WHO) during those years as we know the reason why "Covid-19".
+## 4. Impact of COVID-19 on Death Rates
+The reason for excluding data from the years 2020 and 2021 for the above was due to insufficient data availability. Only approximately 23 countries provided complete data to the World Health Organization (WHO) during those years, and this was primarily due to the impact of "Covid-19."
 ### Year wise death rate of that 23 countries
                 SELECT "Year",
                        SUM("Number") AS accident_deaths,
                        SUM("Total Deaths") AS Total_Deaths,
-                       ROUND((SUM("Number") / SUM("Total Deaths")) * 100, 2) AS percentage
-              FROM road_accidents1
+                       ROUND((SUM("Number") / SUM("Total Deaths")) * 100, 2) AS percentage,
+		       round((sum("Number") / sum("Total population")* 100000),2) as "Death Rate"
+              FROM accident_deaths
               WHERE "Country Name" IN ('Oman', 'Luxembourg', 'Saint Vincent and the Grenadines',
                          'Grenada', 'Latvia', 'Estonia', 'Kazakhstan', 'Iceland', 'Mongolia',
                          'Seychelles', 'Ecuador', 'Armenia', 'Qatar', 'Austria', 'Australia',
@@ -449,55 +297,82 @@ The reason for excluding data from the years 2020 and 2021 for the above was due
               GROUP BY "Year"
               ORDER BY "Year" DESC;
 
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/a7caf1bb-f3b4-4a45-94ae-d06de47be071)
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/1ac0ef61-7cd2-4b1e-b61a-d9813f0a9216)
 
-           
-## Cause-Specific Mortality Rate
-### Top 10 countries with Maximum death rate over 100,000 deaths each year( Cause-Specific Mortality Rate).
+### Income Distribution of these countries
+                     		
+with a as (SELECT distinct (r."Country Name"),c."Income Category" as income_category
+                                 FROM Country_Income_Group AS c
+                                 JOIN road_accidents AS r ON c."Country Name" = r."Country Name"
+						 		
+			  where  r."Country Name" IN ('Oman', 'Luxembourg', 'Saint Vincent and the Grenadines',
+                         'Grenada', 'Latvia', 'Estonia', 'Kazakhstan', 'Iceland', 'Mongolia',
+                         'Seychelles', 'Ecuador', 'Armenia', 'Qatar', 'Austria', 'Australia',
+                         'Serbia', 'Mauritius', 'Lithuania', 'Spain', 'North Macedonia', 'Georgia',
+                         'Lebanon', 'Czechia')
+                         group by income_category,r."Country Name")
+		select income_category, count("income_category") as "count" from a
+		group by income_category
+		order by count desc;
+                         
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/c08ab1b2-d5b5-4893-89b0-3512888cfd27)
 
-            with a as(SELECT "Country Name","Year" ,(sum("Number") / sum("Total population") * 100000) as "Death Rate",
-	                     RANK() OVER (PARTITION BY "Year" ORDER BY (SUM("Number") / SUM("Total population") * 100000) DESC)
-		             AS "Rank" from road_accidents
-                     GROUP BY "Country Name", "Year")
-            SELECT  "Country Name",  "Year","Rank",
-                    MAX("Death Rate") AS "Max Death Rate"
-            FROM a
-            where "Rank" <11
-            GROUP BY "Country Name", "Year","Rank"
-            order by "Year" desc,"Max Death Rate" desc;
+### Year wise Death Rate with respect to Age Category
+                         WITH a AS (
+                         SELECT
+                               *,
+                               CASE
+                                  WHEN "Age Group" IN ('15-19') THEN 'Teenager'
+                                  WHEN "Age Group" IN ('20-24', '25-29') THEN 'Young Adult'
+                                  WHEN "Age Group" IN ('30-34', '35-39') THEN 'Adult'
+                                  WHEN "Age Group" IN ('40-44', '45-49', '50-54', '55-59') THEN 'Middle Age'
+                          ELSE 'Senior'
+                          END AS age_category
+                          FROM accident_deaths
+                          ),
+                      b AS (
+                    SELECT
+                        "Year",
+                        "age_category",
+                        SUM("Number") AS "Number",
+                        SUM("Total Deaths") AS Total_Deaths,
+                        SUM("Total population") AS Total_Population,
+                        ROUND((SUM("Number") / SUM("Total Deaths") * 100), 2) || '%' AS death_percent,
+                        ROUND((SUM("Number") / SUM("Total population") * 100000), 2) AS "Death Rate"
+                    FROM a
+                    WHERE "Country Name" IN ('Oman', 'Luxembourg', 'Saint Vincent and the Grenadines',
+                   'Grenada', 'Latvia', 'Estonia', 'Kazakhstan', 'Iceland', 'Mongolia',
+                   'Seychelles', 'Ecuador', 'Armenia', 'Qatar', 'Austria', 'Australia',
+                   'Serbia', 'Mauritius', 'Lithuania', 'Spain', 'North Macedonia', 'Georgia',
+                   'Lebanon', 'Czechia')
+                  GROUP BY "age_category", "Year"
+                       )
+                  SELECT
+                     "Year",
+                     ROUND(SUM(CASE WHEN "age_category" = 'Teenager' THEN "Death Rate" ELSE 0 END), 2) AS "Teenager Death Rate",
+                     ROUND(SUM(CASE WHEN "age_category" = 'Young Adult' THEN "Death Rate" ELSE 0 END), 2) AS "Young Adult Death Rate",
+                     ROUND(SUM(CASE WHEN "age_category" = 'Adult' THEN "Death Rate" ELSE 0 END), 2) AS "Adult Death Rate",
+                     ROUND(SUM(CASE WHEN "age_category" = 'Middle Age' THEN "Death Rate" ELSE 0 END), 2) AS "Middle Age Death Rate",
+                     ROUND(SUM(CASE WHEN "age_category" = 'Senior' THEN "Death Rate" ELSE 0 END), 2) AS "Senior Death Rate"
+                  FROM b
+                  GROUP BY "Year"
+                  ORDER BY "Year" desc;
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/beb67361-d49e-42d4-8241-535d3c0a4570)
 
-#### Output
-
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/07d14b2c-76f6-4f61-9ec5-2722d3f5ef2e)
-
-### Creating a View for Total Deaths
-
-           CREATE VIEW road_accidents1 AS SELECT
-                                *,
-                               ROUND(("Number" / "Percentage of cause-specific deaths out of total deaths") * 100)
-                               AS "Total Deaths"
-			       FROM "Accidents".accidents
-	                        where "Percentage of cause-specific deaths out of total deaths" !=0 and "Number" != 0;
-		
-#### 10 countries with Minimum death rate over 100,000 deaths each year
-
-           with a as(SELECT "Country Name","Year" ,(sum("Number") / sum("Total population") * 100000) as "Death Rate",
-	                     RANK() OVER (PARTITION BY "Year" ORDER BY (SUM("Number") / SUM("Total population") * 100000) ASC)
-		             AS "Rank" from road_accidents
-                     GROUP BY "Country Name", "Year")
-            SELECT  "Country Name",  "Year","Rank",
-                    Min("Death Rate") AS "Min Death Rate"
-            FROM a
-            where "Rank" <11
-            GROUP BY "Country Name", "Year","Rank"
-            order by "Year" desc,"Max Death Rate" desc;
-            order by "Year" desc,"Min Death Rate" Asc;
-
-#### Output
-![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/b5f7c67d-89ab-45d7-8bb2-849ef2f47d12)
+### Year wise Death_Percentage Rate with respect to Age Category
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/9acb563c-391b-4004-a3a1-c22eec50102a)
 
 
-  
+## Conclusion
+Based on our analysis, it's evident that death rates are significantly influenced by a country's income category. In most cases, countries with higher income levels tend to exhibit lower death rates due to Road Accidents. While there are exceptions, Like Qatar, I recently came across an article that mentioned more deaths in Qatar caused by road accidents than common diseases. Initially, I found it hard to believe, but upon conducting my analysis, I'm inclined to think there might be truth in that statement. The average percentage of deaths due to road accidents out of the total deaths is the highest, while China has the least. This data strongly suggests that countries like Qatar have a significant potential to reduce their death rates, as it lies within their control.
+
+Furthermore, our findings highlight that gender plays a crucial role in road accidents, with males being more prone to such incidents. Young adults and adults are particularly vulnerable to road accidents. We also observed a notable drop in deaths due to accidents during the COVID-19 pandemic, as expected.
+
+In conclusion, our findings underscore the complex interplay of income, gender, and age in shaping death rates, particularly in the context of road accidents. These insights can guide public health policies and interventions aimed at reducing mortality and enhancing the well-being of populations in different income categories. To address the challenge of road accidents, it's crucial for countries to implement effective road safety measures, enforcement, and awareness campaigns. The potential for reducing deaths from road accidents is well within their grasp, and concerted efforts can make a significant difference in saving lives and ensuring safer road environments."
+
+
+
+
 
 
 
