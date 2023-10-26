@@ -13,7 +13,10 @@ This Repository contains all the projects I did as part of my academic journey a
      app which is an online investment platform based in India to understand major themes.
      * Source: The data was scraped from Google Play Store.
      * Tools used: Pandas, Nltk, Gensim, IPython, pyLDAvis, Matplotlib, Seaborn, Google Play Srapper
-
+* ### Exploratory Data Analysis
+    * EDA of Deaths Due to Road Accidents Using SQL 
+           * Source: WHO and World Bank
+           * Tools: PostgreSQL
 
   
 
