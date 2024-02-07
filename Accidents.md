@@ -371,6 +371,7 @@ Furthermore, our findings highlight that gender plays a crucial role in road acc
 
 In conclusion, our findings underscore the complex interplay of income, gender, and age in shaping death rates, particularly in the context of road accidents. These insights can guide public health policies and interventions aimed at reducing mortality and enhancing the well-being of populations in different income categories. To address the challenge of road accidents, it's crucial for countries to implement effective road safety measures, enforcement, and awareness campaigns. The potential for reducing deaths from road accidents is well within their grasp, and concerted efforts can make a significant difference in saving lives and ensuring safer road environments."
 
+![image](https://github.com/Sadiya-Zubair/Data-Science-projects/assets/36756199/5d44989b-9a78-47e6-a228-1a0ad8162424)
 
 
 
