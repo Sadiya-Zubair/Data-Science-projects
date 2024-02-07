@@ -17,6 +17,6 @@ This Repository contains all the projects I did as part of my academic journey a
     * [EDA of Deaths Due to Road Accidents Using SQL](https://github.com/Sadiya-Zubair/Data-Science-projects/blob/main/Accidents.md) I analyzed road accident mortality rates, gained valuable insights into the patterns, trends, and potential factors that influence the occurrence of deaths due to road accidents.
       * Source: WHO and World Bank
       * Tools: PostgreSQL
-
+    * [Road Accident Dashboard](https://github.com/Sadiya-Zubair/Data-Science-projects/blob/main/Road%20Acident%20Dasboard.md)
   
 
